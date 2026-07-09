@@ -31,7 +31,7 @@ A daily scheduling board for sonographers and clinics, built as a technical asse
 | Layer | Choice |
 |---|---|
 | Framework | Next.js 15 (App Router) + React 19 + TypeScript (strict) |
-| Styling | Tailwind CSS 4 |
+| Styling | Tailwind CSS 4 + shadcn/ui (Base UI primitives) |
 | Server state | TanStack Query 5 (caching, optimistic updates) |
 | UI state | Zustand |
 | Drag & drop | dnd-kit |
