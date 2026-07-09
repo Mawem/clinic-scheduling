@@ -2,15 +2,16 @@
 
 import { formatTimeLabel } from "@clinic-scheduling/domain";
 import { Button } from "@/components/ui/button";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formatDateLabel } from "@/lib/date";
 import { useClinics } from "@/lib/queries";
 import { useUiStore } from "@/stores/ui-store";
@@ -20,10 +21,11 @@ export function ScheduleHeader() {
     useUiStore();
   const { data: clinics } = useClinics();
   const activeClinic = clinics?.find((c) => c.id === clinicFilter);
-  const clinicItems = {
-    all: "All clinics",
-    ...Object.fromEntries((clinics ?? []).map((c) => [c.id, c.name])),
-  };
+  const clinicOptions = [
+    { value: "all", label: "All clinics" },
+    ...(clinics ?? []).map((c) => ({ value: c.id, label: c.name })),
+  ];
+  const selectedOption = clinicOptions.find((o) => o.value === clinicFilter) ?? clinicOptions[0]!;
 
   return (
     <header className="mb-4 shrink-0 sm:mb-3">
@@ -60,22 +62,29 @@ export function ScheduleHeader() {
           <Label className="sr-only" htmlFor="clinic-filter">
             Filter by clinic
           </Label>
-          <Select
-            items={clinicItems}
-            value={clinicFilter}
-            onValueChange={(value) => setClinicFilter(value as string)}
+          <Combobox
+            items={clinicOptions}
+            value={selectedOption}
+            onValueChange={(option) =>
+              setClinicFilter((option as { value: string } | null)?.value ?? "all")
+            }
           >
-            <SelectTrigger id="clinic-filter" className="bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(clinicItems).map(([id, name]) => (
-                <SelectItem key={id} value={id}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <ComboboxInput
+              id="clinic-filter"
+              placeholder="Filter by clinic"
+              className="w-48 bg-white"
+            />
+            <ComboboxContent>
+              <ComboboxEmpty>No clinics found.</ComboboxEmpty>
+              <ComboboxList>
+                {(option: { value: string; label: string }) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
 
           {/* On mobile the floating action button (SchedulePage) replaces this. */}
           <Button onClick={() => openCreateDialog()} className="max-sm:hidden">
