@@ -1,0 +1,106 @@
+# Architecture & Tradeoffs
+
+This document explains the decisions behind the code, roughly in the order they were made.
+
+## 1. Monorepo with a pure domain package
+
+The repo is a pnpm/Turborepo workspace with one app (`apps/web`) and one library
+(`packages/domain`). For an app this size a monorepo is arguably overkill — the deliberate
+point is the **boundary**, not the tooling:
+
+- `@clinic-scheduling/domain` contains the scheduling rules (interval overlap, double-booking,
+  operating hours) as pure TypeScript with zero dependencies. It doesn't know React, HTTP, or
+  MSW exist.
+- Both the UI (form validation, drag pre-checks) and the mock API (request validation) import
+  the *same* functions, so the client and "server" can never disagree about what a conflict is.
+- The rules are exhaustively unit-testable without rendering anything.
+
+In a real system this package is what you'd share between a React frontend and a Node/tRPC
+backend — the same layering the eventual production stack would want.
+
+**Tradeoff:** more scaffolding (workspace configs, `transpilePackages`). Accepted because the
+boundary is the most valuable thing to demonstrate and to keep maintainable.
+
+## 2. Mock REST API: MSW instead of Next.js route handlers
+
+The requirement is "consume data from a mocked REST API (no database)". Two candidate designs:
+
+1. **Next.js route handlers** with an in-memory store — a real HTTP server, but on serverless
+   hosting (Vercel) each invocation may hit a different instance, so mutations randomly
+   disappear between requests. Fine locally, embarrassing in a live demo.
+2. **Mock Service Worker (MSW)** — the "server" runs in a Service Worker in the browser.
+   The app's data layer still issues plain `fetch` calls to `/api/...` and handles real HTTP
+   status codes; MSW intercepts at the network boundary.
+
+I chose MSW. The app code is indistinguishable from code talking to a real backend (swap the
+worker for a real API and nothing above `lib/api/` changes), state is consistent per browser
+session, and the *same handlers* run in `msw/node` for integration tests.
+
+**Tradeoffs:** state resets on page reload (acceptable for a demo; the store re-seeds
+deterministically), and MSW ships in the production bundle (deliberate — the deployed demo *is*
+the product here).
+
+The mock API behaves like a defensive real backend: it re-validates every write and returns
+`409` for double-bookings, `422` for hours/range violations, `404` for unknown ids, with a
+structured `{ errors: [{ code, message }] }` body. Simulated latency (250–600 ms) makes
+loading states and optimistic updates observable.
+
+## 3. Server state vs UI state: TanStack Query + Zustand
+
+- **TanStack Query** owns everything fetched over HTTP: caching per day
+  (`["appointments", date]`), request lifecycle (`isPending`/`isError`), refetching, and
+  optimistic mutations.
+- **Zustand** owns purely client-side state: selected date, clinic filter, which dialog is open,
+  toasts.
+
+The split is intentional: server data has a lifecycle (stale, refetching, rolled back) that a
+plain store handles badly, while ephemeral UI state doesn't need cache semantics. Zustand was
+kept deliberately small — two stores, no middleware — matching its role as lightweight UI state
+management rather than a data layer.
+
+## 4. Optimistic updates with rollback
+
+All mutations patch the query cache in `onMutate`, snapshot the previous value, roll back in
+`onError` (with an error toast explaining *why* — e.g. the conflicting booking), and
+re-sync with the server in `onSettled`. Drag-and-drop moves therefore feel instant, and a
+rejected move visibly snaps the card back.
+
+Validation runs **twice** on purpose: a client-side pre-check against the cached day gives
+instant feedback (no request at all for an obviously invalid drop), and the API re-validates as
+the source of truth. The pre-check only sees the day on screen, so cross-day edits rely on the
+server check — a deliberate simplification.
+
+## 5. The board itself
+
+The grid is CSS: a column per sonographer, 48 × 15-minute slot cells, and absolutely
+positioned appointment cards (`top`/`height` derived from minutes). No calendar library —
+the layout math is ~10 lines and a library would obscure the drag-and-drop and validation
+work the assessment asks about.
+
+dnd-kit provides the drag layer: each empty slot is a droppable (and also a button that
+creates an appointment at that time), each card a draggable. A 6px activation distance
+distinguishes click (edit) from drag (move).
+
+**Accessibility tradeoff:** dnd-kit's keyboard sensor conflicts with using Enter/Space to open
+the edit dialog, and keyboard-dragging across a 192-cell grid is a poor experience anyway. So
+drag is pointer-only, and the keyboard path to *the same outcome* is: focus card → Enter →
+change time/sonographer in the dialog. Native `<dialog>`, labeled controls, `role="alert"`
+validation, and `aria-live` toasts cover the rest.
+
+## 6. Times as strings, math in minutes
+
+Appointments store `date: "YYYY-MM-DD"` and `start`/`end` as `"HH:mm"` — no `Date` objects,
+no timezones. Scheduling math converts to minutes-since-midnight at the domain boundary.
+Clinic scheduling is wall-clock local by nature; introducing `Date`/UTC here would add DST
+and serialization bugs without adding correctness.
+
+## 7. What I'd do next (not done, on purpose)
+
+- **Real backend**: replace MSW with a Node/Bun API (the `lib/api` layer is the only seam) —
+  Prisma + MySQL for storage, tRPC for end-to-end types, with `@clinic-scheduling/domain`
+  validating on both sides. Concurrency (two schedulers booking the same slot) would need a
+  transactional uniqueness check server-side.
+- **E2E tests**: Playwright for the drag-and-drop path, which unit tests can't meaningfully cover.
+- **Recurring schedules, multi-day/week views, sonographer availability windows** (lunch,
+  PTO) — the domain `validateAppointment` context object is shaped so new rules slot in.
+- **Undo** for deletes instead of `confirm()`, and conflict *suggestions* (nearest free slot).
