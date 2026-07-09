@@ -75,7 +75,7 @@ export function AppointmentCard({
       className={clsx(
         // touch-manipulation (not touch-none) keeps swipe-to-scroll working;
         // the TouchSensor's long-press takes over only when drag activates.
-        "group absolute inset-x-1 cursor-grab touch-manipulation overflow-hidden rounded-md border-l-4 px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
+        "group absolute inset-x-1 cursor-grab touch-manipulation overflow-hidden rounded-md px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
         "focus-visible:outline-2 focus-visible:outline-indigo-600",
         colors.card,
         dimmed && "opacity-40",
