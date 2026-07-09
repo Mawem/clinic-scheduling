@@ -16,7 +16,7 @@ export function SonographerTabs({ sonographers, activeId, onSelect }: Sonographe
     <div
       role="tablist"
       aria-label="Sonographer"
-      className="mb-2 flex shrink-0 gap-1.5 overflow-x-auto pb-1"
+      className="mb-3 flex shrink-0 gap-2 overflow-x-auto pb-1"
     >
       {sonographers.map((sonographer) => {
         const colors = sonographerColor(sonographer.colorIndex);

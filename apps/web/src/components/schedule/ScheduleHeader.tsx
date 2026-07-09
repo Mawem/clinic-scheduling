@@ -13,7 +13,7 @@ export function ScheduleHeader() {
   const activeClinic = clinics?.find((c) => c.id === clinicFilter);
 
   return (
-    <header className="mb-3 shrink-0">
+    <header className="mb-4 shrink-0 sm:mb-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div>
           <h1 className="text-lg font-semibold text-slate-900 sm:text-xl">

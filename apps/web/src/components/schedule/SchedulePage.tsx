@@ -10,7 +10,7 @@ export function SchedulePage() {
   const openCreateDialog = useUiStore((state) => state.openCreateDialog);
 
   return (
-    <main className="mx-auto flex h-dvh w-full max-w-7xl flex-col px-4 pb-2 pt-5">
+    <main className="mx-auto flex h-dvh w-full max-w-7xl flex-col px-5 pb-3 pt-5 sm:px-6 lg:px-8">
       <ScheduleHeader />
       <ScheduleBoard />
       {dialog ? <AppointmentDialog dialog={dialog} /> : null}
