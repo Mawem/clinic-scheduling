@@ -61,6 +61,12 @@ export function SonographerColumn({
         />
       ))}
 
+      {appointments.length === 0 && (
+        <p className="pointer-events-none absolute inset-x-3 top-16 z-0 text-center text-xs text-slate-400">
+          No appointments for {sonographer.name.split(" ")[0]} — select any open slot to add one.
+        </p>
+      )}
+
       {closedRanges.map((range) => (
         <div
           key={range.from}
