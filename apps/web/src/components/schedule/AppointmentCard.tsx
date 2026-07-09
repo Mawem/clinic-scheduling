@@ -86,13 +86,15 @@ export function AppointmentCard({
       className={clsx(
         // touch-manipulation (not touch-none) keeps swipe-to-scroll working;
         // the TouchSensor's long-press takes over only when drag activates.
-        "group absolute inset-x-1 cursor-grab touch-manipulation overflow-hidden rounded-md px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
+        "group absolute inset-x-1 touch-manipulation overflow-hidden rounded-md px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
         "focus-visible:outline-2 focus-visible:outline-indigo-600",
         colors.card,
+        // Grab cursor and hover tint only when the card is actually interactive.
+        !inert && ["cursor-grab", colors.cardHover],
         // Inert cards stay hit-testable so clicks don't fall through to the
         // slot underneath; the guarded handlers just ignore them.
-        locked && "cursor-default opacity-40",
-        pending && "animate-pulse cursor-default opacity-70",
+        locked && "opacity-40",
+        pending && "animate-pulse opacity-70",
         isDragging && "z-20 cursor-grabbing shadow-lg",
       )}
     >
