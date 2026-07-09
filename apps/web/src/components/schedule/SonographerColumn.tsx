@@ -86,7 +86,7 @@ export function SonographerColumn({
             appointment={appointment}
             clinic={clinics.find((c) => c.id === appointment.clinicId)}
             sonographer={sonographer}
-            dimmed={Boolean(filteredClinic) && appointment.clinicId !== filteredClinic?.id}
+            locked={Boolean(filteredClinic) && appointment.clinicId !== filteredClinic?.id}
             onEdit={() => onEdit(appointment)}
             onDelete={() => onDelete(appointment)}
           />

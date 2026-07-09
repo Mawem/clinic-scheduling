@@ -88,7 +88,7 @@ export function ScheduleHeader() {
         <p className="mt-2 text-sm text-slate-500">
           {activeClinic.name} operates {formatTimeLabel(activeClinic.opensAt)} –{" "}
           {formatTimeLabel(activeClinic.closesAt)}. Closed hours are shaded; appointments at other
-          clinics are dimmed.
+          clinics are locked while this filter is active.
         </p>
       ) : null}
     </header>

@@ -12,7 +12,8 @@ interface AppointmentCardProps {
   appointment: Appointment;
   clinic: Clinic | undefined;
   sonographer: Sonographer;
-  dimmed: boolean;
+  /** Filtered out by the clinic filter: shown for context but not modifiable. */
+  locked: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -21,7 +22,7 @@ export function AppointmentCard({
   appointment,
   clinic,
   sonographer,
-  dimmed,
+  locked,
   onEdit,
   onDelete,
 }: AppointmentCardProps) {
@@ -45,13 +46,23 @@ export function AppointmentCard({
   // Awaiting server confirmation: visible for instant feedback, but inert —
   // the server can't act on an id it hasn't issued.
   const pending = isOptimisticId(appointment.id);
+  // Inert cards render for context but accept no interaction at all.
+  const inert = pending || locked;
+
+  const stateHint = pending
+    ? " Saving."
+    : locked
+      ? " Locked by the clinic filter — select this clinic or All clinics to edit."
+      : " Press Enter to edit.";
 
   return (
     <div
       ref={setNodeRef}
       {...attributes}
-      {...listeners}
+      {...(inert ? undefined : listeners)}
+      tabIndex={inert ? -1 : attributes.tabIndex}
       onClick={() => {
+        if (inert) return;
         if (wasDragged.current) {
           wasDragged.current = false;
           return;
@@ -59,14 +70,14 @@ export function AppointmentCard({
         onEdit();
       }}
       onKeyDown={(event) => {
-        if (pending) return;
+        if (inert) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onEdit();
         }
       }}
-      aria-label={`${appointment.patientName}, ${appointment.examType}, ${timeLabel} at ${clinic?.name ?? "unknown clinic"} with ${sonographer.name}.${pending ? " Saving." : " Press Enter to edit."}`}
-      aria-disabled={pending || undefined}
+      aria-label={`${appointment.patientName}, ${appointment.examType}, ${timeLabel} at ${clinic?.name ?? "unknown clinic"} with ${sonographer.name}.${stateHint}`}
+      aria-disabled={inert || undefined}
       style={{
         top: minutesToOffsetPx(startMin),
         height: durationToHeightPx(startMin, endMin),
@@ -78,24 +89,28 @@ export function AppointmentCard({
         "group absolute inset-x-1 cursor-grab touch-manipulation overflow-hidden rounded-md px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
         "focus-visible:outline-2 focus-visible:outline-indigo-600",
         colors.card,
-        dimmed && "opacity-40",
-        pending && "pointer-events-none animate-pulse opacity-70",
+        // Inert cards stay hit-testable so clicks don't fall through to the
+        // slot underneath; the guarded handlers just ignore them.
+        locked && "cursor-default opacity-40",
+        pending && "animate-pulse cursor-default opacity-70",
         isDragging && "z-20 cursor-grabbing shadow-lg",
       )}
     >
       <div className="flex items-start justify-between gap-1">
         <p className="truncate text-xs font-semibold text-slate-900">{appointment.patientName}</p>
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete();
-          }}
-          aria-label={`Delete appointment for ${appointment.patientName} at ${formatTimeLabel(appointment.start)}`}
-          className="hidden shrink-0 rounded px-1 text-slate-400 hover:bg-white/70 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-600 group-hover:block group-focus-within:block pointer-coarse:block"
-        >
-          ×
-        </button>
+        {!inert && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            aria-label={`Delete appointment for ${appointment.patientName} at ${formatTimeLabel(appointment.start)}`}
+            className="hidden shrink-0 rounded px-1 text-slate-400 hover:bg-white/70 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-600 group-hover:block group-focus-within:block pointer-coarse:block"
+          >
+            ×
+          </button>
+        )}
       </div>
       {!compact && (
         <>
