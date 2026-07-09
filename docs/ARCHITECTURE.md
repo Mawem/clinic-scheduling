@@ -87,14 +87,38 @@ drag is pointer-only, and the keyboard path to *the same outcome* is: focus card
 change time/sonographer in the dialog. Native `<dialog>`, labeled controls, `role="alert"`
 validation, and `aria-live` toasts cover the rest.
 
-## 6. Times as strings, math in minutes
+## 6. Responsive strategy: one sonographer per screen on mobile
+
+A four-column time grid cannot shrink to 390px — squeezing it produced dual-axis scrolling
+with the time gutter scrolled out of view. Instead of degrading the desktop layout, mobile
+gets a different composition of the same pieces (the Google Calendar day-view pattern):
+
+- Below `sm`, the board renders **one sonographer's column at a time**, full width, switched
+  via a pill tab bar. A `matchMedia` hook drives this in JS rather than CSS-hiding the other
+  columns, so the extra columns (and their 144 droppable slots each) aren't mounted at all.
+- The board lives in a **single scroll container** with `position: sticky` pinning the time
+  gutter (left) and sonographer headers (top) — orientation survives scrolling on every
+  screen size.
+- **Touch gets different drag semantics**: dnd-kit's `TouchSensor` with a 250ms long-press
+  activates a drag, so ordinary swipes scroll the board and appointments can't be moved
+  accidentally. Mouse keeps the 6px-distance activation. The delete button, hover-revealed
+  on desktop, is always visible on coarse pointers (`pointer-coarse:` variant).
+- The "new appointment" action moves from the header to a **floating action button** in
+  thumb reach; dialog field rows stack to a single column.
+
+**Tradeoffs:** slot heights stay 18px on mobile (tap-to-create a specific slot is a
+secondary path — the FAB covers creation), and cross-sonographer drag isn't possible while
+one column is shown — reassigning is done through the edit dialog, which is also the
+keyboard path, so mobile and keyboard users share one well-tested flow.
+
+## 7. Times as strings, math in minutes
 
 Appointments store `date: "YYYY-MM-DD"` and `start`/`end` as `"HH:mm"` — no `Date` objects,
 no timezones. Scheduling math converts to minutes-since-midnight at the domain boundary.
 Clinic scheduling is wall-clock local by nature; introducing `Date`/UTC here would add DST
 and serialization bugs without adding correctness.
 
-## 7. What I'd do next (not done, on purpose)
+## 8. What I'd do next (not done, on purpose)
 
 - **Real backend**: replace MSW with a Node/Bun API (the `lib/api` layer is the only seam) —
   Prisma + MySQL for storage, tRPC for end-to-end types, with `@clinic-scheduling/domain`

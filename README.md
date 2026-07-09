@@ -15,6 +15,7 @@ A daily scheduling board for sonographers and clinics, built as a technical asse
 - **Clinic operating hours** — appointments must fit inside the clinic's hours (HTTP 422 otherwise). Filtering by clinic shades its closed hours and dims other clinics' appointments.
 - **Optimistic UI** — moves, edits, and deletes apply instantly and roll back with an error toast if the server rejects them.
 - **Loading & error states** — skeleton board while loading, retryable error panel on failure.
+- **Responsive** — desktop shows all sonographers side by side with a sticky time gutter and headers; mobile shows one sonographer at a time with a tab switcher, long-press drag, and a floating create button.
 
 ## Stack
 
