@@ -22,6 +22,7 @@ import {
 import { toast } from "@/stores/toast-store";
 import { useUiStore } from "@/stores/ui-store";
 import { SonographerColumn } from "./SonographerColumn";
+import { SonographerHeader } from "./SonographerHeader";
 import { TimeGutter } from "./TimeGutter";
 import type { SlotDropData } from "./SlotCell";
 
@@ -46,19 +47,27 @@ export function ScheduleBoard() {
 
   if (failedQuery) {
     return (
-      <ErrorState
-        title="Couldn't load the schedule"
-        detail={failedQuery.error instanceof Error ? failedQuery.error.message : undefined}
-        onRetry={() => {
-          for (const query of [clinicsQuery, sonographersQuery, appointmentsQuery]) {
-            if (query.isError) void query.refetch();
-          }
-        }}
-      />
+      <div className="min-h-0 flex-1">
+        <ErrorState
+          title="Couldn't load the schedule"
+          detail={failedQuery.error instanceof Error ? failedQuery.error.message : undefined}
+          onRetry={() => {
+            for (const query of [clinicsQuery, sonographersQuery, appointmentsQuery]) {
+              if (query.isError) void query.refetch();
+            }
+          }}
+        />
+      </div>
     );
   }
 
-  if (isLoading) return <BoardSkeleton />;
+  if (isLoading) {
+    return (
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <BoardSkeleton />
+      </div>
+    );
+  }
 
   const clinics = clinicsQuery.data ?? [];
   const sonographers = sonographersQuery.data ?? [];
@@ -120,12 +129,21 @@ export function ScheduleBoard() {
 
   return (
     <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-      <div className="overflow-x-auto pb-4">
+      {/* Single scroll container so the gutter (sticky left) and the column
+          headers (sticky top) stay pinned on both axes. */}
+      <div className="min-h-0 flex-1 overflow-auto">
         <div
-          className="grid gap-2"
-          style={{ gridTemplateColumns: `64px repeat(${sonographers.length}, minmax(150px, 1fr))` }}
+          className="grid gap-x-2"
+          style={{ gridTemplateColumns: `56px repeat(${sonographers.length}, minmax(150px, 1fr))` }}
         >
-          <div className="pt-[52px]">
+          <div aria-hidden="true" className="sticky left-0 top-0 z-40 bg-slate-100" />
+          {sonographers.map((sonographer) => (
+            <div key={sonographer.id} className="sticky top-0 z-30 bg-slate-100 pb-2">
+              <SonographerHeader sonographer={sonographer} />
+            </div>
+          ))}
+
+          <div className="sticky left-0 z-20 bg-slate-100">
             <TimeGutter />
           </div>
           {sonographers.map((sonographer) => (

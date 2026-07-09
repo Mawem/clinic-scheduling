@@ -11,7 +11,7 @@ export function TimeGutter() {
         <div
           key={min}
           style={{ height: SLOT_PX * 4 }}
-          className="pr-2 text-right text-xs text-slate-400"
+          className="pr-2 text-right text-xs leading-4 text-slate-400"
         >
           {formatTimeLabel(toTimeString(min))}
         </div>
