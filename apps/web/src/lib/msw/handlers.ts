@@ -11,6 +11,30 @@ async function simulateLatency(): Promise<void> {
 }
 
 /**
+ * Opt-in failure mode so reviewers can see the retryable error state on
+ * purpose: append `?simulateErrors` to the page URL. Never triggers in tests
+ * or in a normal browsing session. MSW handlers run in the page context, so
+ * reading window.location here is safe.
+ */
+function simulatedFailure() {
+  const enabled =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("simulateErrors");
+  if (!enabled || Math.random() > 0.6) return null;
+  return HttpResponse.json(
+    {
+      errors: [
+        {
+          code: "INTERNAL",
+          message: "Simulated server error (?simulateErrors is active). Retry to recover.",
+        },
+      ],
+    },
+    { status: 500 },
+  );
+}
+
+/**
  * The mock API validates every write with the same domain rules the UI uses.
  * This mirrors a real backend: the client validates for UX, the server is the
  * source of truth. 409 = double-booking, 422 = other validation failures.
@@ -38,6 +62,8 @@ export const handlers = [
 
   http.get("*/api/appointments", async ({ request }) => {
     await simulateLatency();
+    const failure = simulatedFailure();
+    if (failure) return failure;
     const date = new URL(request.url).searchParams.get("date");
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return HttpResponse.json(
