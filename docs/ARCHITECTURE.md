@@ -118,7 +118,28 @@ no timezones. Scheduling math converts to minutes-since-midnight at the domain b
 Clinic scheduling is wall-clock local by nature; introducing `Date`/UTC here would add DST
 and serialization bugs without adding correctness.
 
-## 8. What I'd do next (not done, on purpose)
+## 8. Compliance posture (healthcare data)
+
+Every patient in this app is fictional — the seed data is generated names against a mock
+API, so there is no PHI and the board deliberately shows full appointment details for
+reviewability. That choice is only correct *because* this is an assessment. A production
+deployment handling real scheduling data would change the posture:
+
+- **AuthN/AuthZ with role-based access** — schedulers, sonographers, and clinic staff see
+  different scopes; today the app has no identity at all.
+- **PHI minimization on shared surfaces** — a day board on a wall-mounted clinic screen
+  should show initials or MRN fragments, not full patient names; full detail only behind
+  an authenticated click with an audit trail.
+- **Audit logging** of every read/write touching patient data (HIPAA requires access
+  accounting), plus session timeouts on shared workstations.
+- **Infrastructure** — BAA-covered hosting, encryption at rest, and no patient data in
+  logs, analytics, or error reports (toast messages here include patient names — that's
+  fine for fake data, but a real build would scrub identifiers from error channels).
+
+None of this is implemented, intentionally: auth theater over fake data would add review
+noise without demonstrating anything real. The list is here to mark where the line sits.
+
+## 9. What I'd do next (not done, on purpose)
 
 - **Real backend**: replace MSW with a Node/Bun API (the `lib/api` layer is the only seam) —
   Prisma + MySQL for storage, tRPC for end-to-end types, with `@clinic-scheduling/domain`
