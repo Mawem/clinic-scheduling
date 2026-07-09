@@ -18,6 +18,17 @@ export const queryKeys = {
   appointments: (date: string) => ["appointments", date] as const,
 };
 
+const OPTIMISTIC_ID_PREFIX = "optimistic-";
+
+/**
+ * True for appointments inserted optimistically that the server hasn't
+ * confirmed yet. They render immediately but must not be edited, dragged, or
+ * deleted — the server doesn't know their id.
+ */
+export function isOptimisticId(id: string): boolean {
+  return id.startsWith(OPTIMISTIC_ID_PREFIX);
+}
+
 export function useClinics() {
   return useQuery({ queryKey: queryKeys.clinics, queryFn: fetchClinics, staleTime: Infinity });
 }
@@ -55,7 +66,7 @@ export function useCreateAppointment(date: string) {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<Appointment[]>(key);
       if (input.date === date) {
-        const optimistic: Appointment = { ...input, id: `optimistic-${Date.now()}` };
+        const optimistic: Appointment = { ...input, id: `${OPTIMISTIC_ID_PREFIX}${Date.now()}` };
         queryClient.setQueryData<Appointment[]>(key, (old) => [...(old ?? []), optimistic]);
       }
       return { previous };

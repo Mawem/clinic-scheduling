@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import type { Appointment, Clinic, Sonographer } from "@clinic-scheduling/domain";
 import { formatTimeLabel, toMinutes } from "@clinic-scheduling/domain";
 import { durationToHeightPx, minutesToOffsetPx, sonographerColor } from "@/lib/constants";
+import { isOptimisticId } from "@/lib/queries";
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -41,6 +42,9 @@ export function AppointmentCard({
   const colors = sonographerColor(sonographer.colorIndex);
   const timeLabel = `${formatTimeLabel(appointment.start)} – ${formatTimeLabel(appointment.end)}`;
   const compact = endMin - startMin < 45;
+  // Awaiting server confirmation: visible for instant feedback, but inert —
+  // the server can't act on an id it hasn't issued.
+  const pending = isOptimisticId(appointment.id);
 
   return (
     <div
@@ -55,12 +59,14 @@ export function AppointmentCard({
         onEdit();
       }}
       onKeyDown={(event) => {
+        if (pending) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onEdit();
         }
       }}
-      aria-label={`${appointment.patientName}, ${appointment.examType}, ${timeLabel} at ${clinic?.name ?? "unknown clinic"} with ${sonographer.name}. Press Enter to edit.`}
+      aria-label={`${appointment.patientName}, ${appointment.examType}, ${timeLabel} at ${clinic?.name ?? "unknown clinic"} with ${sonographer.name}.${pending ? " Saving." : " Press Enter to edit."}`}
+      aria-disabled={pending || undefined}
       style={{
         top: minutesToOffsetPx(startMin),
         height: durationToHeightPx(startMin, endMin),
@@ -73,6 +79,7 @@ export function AppointmentCard({
         "focus-visible:outline-2 focus-visible:outline-indigo-600",
         colors.card,
         dimmed && "opacity-40",
+        pending && "pointer-events-none animate-pulse opacity-70",
         isDragging && "z-20 cursor-grabbing shadow-lg",
       )}
     >
