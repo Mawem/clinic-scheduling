@@ -84,8 +84,19 @@ distinguishes click (edit) from drag (move).
 **Accessibility tradeoff:** dnd-kit's keyboard sensor conflicts with using Enter/Space to open
 the edit dialog, and keyboard-dragging across a 192-cell grid is a poor experience anyway. So
 drag is pointer-only, and the keyboard path to *the same outcome* is: focus card → Enter →
-change time/sonographer in the dialog. Native `<dialog>`, labeled controls, `role="alert"`
-validation, and `aria-live` toasts cover the rest.
+change time/sonographer in the dialog. The shadcn/ui dialog (a Base UI primitive), labeled
+controls, `role="alert"` validation, and `aria-live` toasts cover the rest.
+
+Form and overlay controls (buttons, dialog, selects, inputs) come from **shadcn/ui** on
+Base UI primitives — accessible popups and focus management are solved problems that
+shouldn't be hand-rolled. The board grid, appointment cards, and tabs stay custom: no
+component kit expresses this layout, and the split shows both sides of the judgment call —
+lean on the ecosystem where it's commodity, build only what's genuinely bespoke.
+
+When a clinic filter is active, appointments at other clinics render dimmed **and inert**
+(no drag, edit, or delete; `aria-disabled`): a card that looks disabled must be disabled.
+They stay hit-testable so a click on a locked card does nothing, rather than falling
+through to the empty slot behind it.
 
 ## 6. Responsive strategy: one sonographer per screen on mobile
 

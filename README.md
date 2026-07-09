@@ -90,7 +90,7 @@ docker build -t clinic-scheduling . && \
 
 ## Accessibility
 
-- Native `<dialog>` for modals: focus trap, Escape, and inert background for free.
+- Modals use the shadcn/ui dialog (Base UI primitive): focus trap, Escape handling, and an inert background managed by the primitive.
 - Every form control has a real `<label>`; validation errors render in a `role="alert"` region; toasts announce via `aria-live`.
 - Drag & drop is pointer-only by design; the equivalent keyboard path is opening a card (Enter/Space) and changing time/sonographer in the edit dialog.
 - Empty slots are buttons with descriptive labels ("New appointment for Alice Nguyen at 9 AM").
