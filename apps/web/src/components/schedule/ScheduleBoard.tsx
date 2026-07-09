@@ -2,7 +2,8 @@
 
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   pointerWithin,
   useSensor,
   useSensors,
@@ -47,8 +48,11 @@ export function ScheduleBoard() {
   const deleteAppointment = useDeleteAppointment(selectedDate);
 
   const sensors = useSensors(
-    // The distance threshold keeps plain clicks (edit) distinct from drags (move).
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // Mouse: a small distance threshold keeps clicks (edit) distinct from drags.
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // Touch: long-press to lift, so normal swipes scroll the board and
+    // appointments can't be moved by accident.
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
   );
 
   const isLoading =

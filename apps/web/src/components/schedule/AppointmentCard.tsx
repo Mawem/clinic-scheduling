@@ -67,7 +67,9 @@ export function AppointmentCard({
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       }}
       className={clsx(
-        "group absolute inset-x-1 cursor-grab touch-none overflow-hidden rounded-md border-l-4 px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
+        // touch-manipulation (not touch-none) keeps swipe-to-scroll working;
+        // the TouchSensor's long-press takes over only when drag activates.
+        "group absolute inset-x-1 cursor-grab touch-manipulation overflow-hidden rounded-md border-l-4 px-2 py-1 text-left shadow-sm ring-1 ring-slate-900/5 transition-shadow",
         "focus-visible:outline-2 focus-visible:outline-indigo-600",
         colors.card,
         dimmed && "opacity-40",
@@ -83,7 +85,7 @@ export function AppointmentCard({
             onDelete();
           }}
           aria-label={`Delete appointment for ${appointment.patientName} at ${formatTimeLabel(appointment.start)}`}
-          className="hidden shrink-0 rounded px-1 text-slate-400 hover:bg-white/70 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-600 group-hover:block group-focus-within:block"
+          className="hidden shrink-0 rounded px-1 text-slate-400 hover:bg-white/70 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-600 group-hover:block group-focus-within:block pointer-coarse:block"
         >
           ×
         </button>
