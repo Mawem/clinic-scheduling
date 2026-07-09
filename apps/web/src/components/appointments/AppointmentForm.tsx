@@ -17,10 +17,22 @@ import {
   toTimeString,
   validateAppointment,
 } from "@clinic-scheduling/domain";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api/client";
 
 const DURATIONS = [15, 30, 45, 60, 90];
+const DURATION_ITEMS = Object.fromEntries(DURATIONS.map((min) => [String(min), `${min} min`]));
+const EXAM_ITEMS = Object.fromEntries(EXAM_TYPES.map((type) => [type, type]));
 
 interface AppointmentFormProps {
   clinics: Clinic[];
@@ -35,9 +47,6 @@ interface AppointmentFormProps {
   onCancel: () => void;
   extraActions?: React.ReactNode;
 }
-
-const inputClasses =
-  "w-full rounded-md bg-white px-2.5 py-1.5 text-sm ring-1 ring-slate-300 focus-visible:outline-2 focus-visible:outline-indigo-600";
 
 export function AppointmentForm({
   clinics,
@@ -67,6 +76,8 @@ export function AppointmentForm({
   const [submitting, setSubmitting] = useState(false);
 
   const selectedClinic = clinics.find((c) => c.id === clinicId);
+  const clinicItems = Object.fromEntries(clinics.map((c) => [c.id, c.name]));
+  const sonographerItems = Object.fromEntries(sonographers.map((s) => [s.id, s.name]));
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -115,153 +126,157 @@ export function AppointmentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate={false} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {errors.length > 0 && (
-        <ul role="alert" className="space-y-1 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <ul
+          role="alert"
+          className="space-y-1 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
           {errors.map((error) => (
             <li key={`${error.code}-${error.message}`}>{error.message}</li>
           ))}
         </ul>
       )}
 
-      <div>
-        <label htmlFor="appt-patient" className="mb-1 block text-sm font-medium text-slate-700">
-          Patient name
-        </label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="appt-patient">Patient name</Label>
+        <Input
           id="appt-patient"
           required
           value={patientName}
           onChange={(e) => setPatientName(e.target.value)}
-          className={inputClasses}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label htmlFor="appt-exam" className="mb-1 block text-sm font-medium text-slate-700">
-            Exam type
-          </label>
-          <select
-            id="appt-exam"
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid gap-1.5">
+          <Label htmlFor="appt-exam">Exam type</Label>
+          <Select
+            items={EXAM_ITEMS}
             value={examType}
-            onChange={(e) => setExamType(e.target.value as ExamType)}
-            className={inputClasses}
+            onValueChange={(value) => setExamType(value as ExamType)}
           >
-            {EXAM_TYPES.map((type) => (
-              <option key={type}>{type}</option>
-            ))}
-          </select>
+            <SelectTrigger id="appt-exam" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {EXAM_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div>
-          <label htmlFor="appt-sonographer" className="mb-1 block text-sm font-medium text-slate-700">
-            Sonographer
-          </label>
-          <select
-            id="appt-sonographer"
+        <div className="grid gap-1.5">
+          <Label htmlFor="appt-sonographer">Sonographer</Label>
+          <Select
+            items={sonographerItems}
             value={sonographerId}
-            onChange={(e) => setSonographerId(e.target.value)}
-            className={inputClasses}
+            onValueChange={(value) => setSonographerId(value as string)}
           >
-            {sonographers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="appt-sonographer" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {sonographers.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div>
-        <label htmlFor="appt-clinic" className="mb-1 block text-sm font-medium text-slate-700">
-          Clinic
-        </label>
-        <select
-          id="appt-clinic"
+      <div className="grid gap-1.5">
+        <Label htmlFor="appt-clinic">Clinic</Label>
+        <Select
+          items={clinicItems}
           value={clinicId}
-          onChange={(e) => setClinicId(e.target.value)}
-          className={inputClasses}
-          aria-describedby="appt-clinic-hours"
+          onValueChange={(value) => setClinicId(value as string)}
         >
-          {clinics.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="appt-clinic" className="w-full" aria-describedby="appt-clinic-hours">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {clinics.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {selectedClinic && (
-          <p id="appt-clinic-hours" className="mt-1 text-xs text-slate-500">
+          <p id="appt-clinic-hours" className="text-xs text-muted-foreground">
             Operating hours: {formatTimeLabel(selectedClinic.opensAt)} –{" "}
             {formatTimeLabel(selectedClinic.closesAt)}
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div>
-          <label htmlFor="appt-date" className="mb-1 block text-sm font-medium text-slate-700">
-            Date
-          </label>
-          <input
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid gap-1.5">
+          <Label htmlFor="appt-date">Date</Label>
+          <Input
             id="appt-date"
             type="date"
             required
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className={inputClasses}
           />
         </div>
-        <div>
-          <label htmlFor="appt-start" className="mb-1 block text-sm font-medium text-slate-700">
-            Start
-          </label>
-          <input
+        <div className="grid gap-1.5">
+          <Label htmlFor="appt-start">Start</Label>
+          <Input
             id="appt-start"
             type="time"
             required
             step={900}
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className={inputClasses}
           />
         </div>
-        <div>
-          <label htmlFor="appt-duration" className="mb-1 block text-sm font-medium text-slate-700">
-            Duration
-          </label>
-          <select
-            id="appt-duration"
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className={inputClasses}
+        <div className="grid gap-1.5">
+          <Label htmlFor="appt-duration">Duration</Label>
+          <Select
+            items={DURATION_ITEMS}
+            value={String(duration)}
+            onValueChange={(value) => setDuration(Number(value))}
           >
-            {DURATIONS.map((min) => (
-              <option key={min} value={min}>
-                {min} min
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="appt-duration" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DURATIONS.map((min) => (
+                <SelectItem key={min} value={String(min)}>
+                  {min} min
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div>
-        <label htmlFor="appt-notes" className="mb-1 block text-sm font-medium text-slate-700">
-          Notes <span className="font-normal text-slate-400">(optional)</span>
-        </label>
-        <textarea
+      <div className="grid gap-1.5">
+        <Label htmlFor="appt-notes">
+          Notes <span className="font-normal text-muted-foreground">(optional)</span>
+        </Label>
+        <Textarea
           id="appt-notes"
           rows={2}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className={inputClasses}
         />
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-1">
         <div>{extraActions}</div>
         <div className="flex items-center gap-2">
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button type="submit" variant="primary" disabled={submitting}>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting}>
             {submitting ? "Saving…" : submitLabel}
           </Button>
         </div>

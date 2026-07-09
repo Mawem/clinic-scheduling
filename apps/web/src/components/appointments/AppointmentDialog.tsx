@@ -1,8 +1,8 @@
 "use client";
 
 import type { AppointmentInput } from "@clinic-scheduling/domain";
-import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   useAppointments,
   useClinics,
@@ -56,24 +56,34 @@ export function AppointmentDialog({ dialog }: { dialog: DialogState }) {
   }
 
   return (
-    <Dialog title={editing ? "Edit appointment" : "New appointment"} onClose={closeDialog}>
-      <AppointmentForm
-        clinics={clinics}
-        sonographers={sonographers}
-        existing={appointments}
-        initial={initial}
-        editingId={editing?.id}
-        submitLabel={editing ? "Save changes" : "Create appointment"}
-        onSubmit={handleSubmit}
-        onCancel={closeDialog}
-        extraActions={
-          editing ? (
-            <Button variant="danger" onClick={handleDelete}>
-              Delete
-            </Button>
-          ) : null
-        }
-      />
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) closeDialog();
+      }}
+    >
+      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editing ? "Edit appointment" : "New appointment"}</DialogTitle>
+        </DialogHeader>
+        <AppointmentForm
+          clinics={clinics}
+          sonographers={sonographers}
+          existing={appointments}
+          initial={initial}
+          editingId={editing?.id}
+          submitLabel={editing ? "Save changes" : "Create appointment"}
+          onSubmit={handleSubmit}
+          onCancel={closeDialog}
+          extraActions={
+            editing ? (
+              <Button type="button" variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            ) : null
+          }
+        />
+      </DialogContent>
     </Dialog>
   );
 }

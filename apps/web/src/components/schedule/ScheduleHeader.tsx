@@ -1,7 +1,16 @@
 "use client";
 
 import { formatTimeLabel } from "@clinic-scheduling/domain";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDateLabel } from "@/lib/date";
 import { useClinics } from "@/lib/queries";
 import { useUiStore } from "@/stores/ui-store";
@@ -11,6 +20,10 @@ export function ScheduleHeader() {
     useUiStore();
   const { data: clinics } = useClinics();
   const activeClinic = clinics?.find((c) => c.id === clinicFilter);
+  const clinicItems = {
+    all: "All clinics",
+    ...Object.fromEntries((clinics ?? []).map((c) => [c.id, c.name])),
+  };
 
   return (
     <header className="mb-4 shrink-0 sm:mb-3">
@@ -23,44 +36,49 @@ export function ScheduleHeader() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1" role="group" aria-label="Date navigation">
-            <Button onClick={() => shiftDate(-1)} aria-label="Previous day">
+            <Button variant="outline" onClick={() => shiftDate(-1)} aria-label="Previous day">
               ←
             </Button>
-            <label className="sr-only" htmlFor="schedule-date">
+            <Label className="sr-only" htmlFor="schedule-date">
               Schedule date
-            </label>
-            <input
+            </Label>
+            <Input
               id="schedule-date"
               type="date"
               value={selectedDate}
               onChange={(event) => event.target.value && setDate(event.target.value)}
-              className="rounded-md bg-white px-2 py-1.5 text-sm ring-1 ring-slate-300 focus-visible:outline-2 focus-visible:outline-indigo-600"
+              className="w-auto bg-white"
             />
-            <Button onClick={() => shiftDate(1)} aria-label="Next day">
+            <Button variant="outline" onClick={() => shiftDate(1)} aria-label="Next day">
               →
             </Button>
-            <Button onClick={goToToday}>Today</Button>
+            <Button variant="outline" onClick={goToToday}>
+              Today
+            </Button>
           </div>
 
-          <label className="sr-only" htmlFor="clinic-filter">
+          <Label className="sr-only" htmlFor="clinic-filter">
             Filter by clinic
-          </label>
-          <select
-            id="clinic-filter"
+          </Label>
+          <Select
+            items={clinicItems}
             value={clinicFilter}
-            onChange={(event) => setClinicFilter(event.target.value)}
-            className="rounded-md bg-white px-2 py-1.5 text-sm ring-1 ring-slate-300 focus-visible:outline-2 focus-visible:outline-indigo-600"
+            onValueChange={(value) => setClinicFilter(value as string)}
           >
-            <option value="all">All clinics</option>
-            {clinics?.map((clinic) => (
-              <option key={clinic.id} value={clinic.id}>
-                {clinic.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="clinic-filter" className="bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(clinicItems).map(([id, name]) => (
+                <SelectItem key={id} value={id}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* On mobile the floating action button (SchedulePage) replaces this. */}
-          <Button variant="primary" onClick={() => openCreateDialog()} className="max-sm:hidden">
+          <Button onClick={() => openCreateDialog()} className="max-sm:hidden">
             + New appointment
           </Button>
         </div>

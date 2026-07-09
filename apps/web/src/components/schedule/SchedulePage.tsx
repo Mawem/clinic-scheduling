@@ -18,7 +18,7 @@ export function SchedulePage() {
         type="button"
         onClick={() => openCreateDialog()}
         aria-label="New appointment"
-        className="fixed bottom-5 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-3xl font-light text-white shadow-lg hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:hidden"
+        className="fixed bottom-5 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-3xl font-light text-primary-foreground shadow-lg hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:hidden"
       >
         +
       </button>

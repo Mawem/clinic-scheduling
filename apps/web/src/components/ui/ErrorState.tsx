@@ -1,4 +1,4 @@
-import { Button } from "./Button";
+import { Button } from "./button";
 
 interface ErrorStateProps {
   title: string;
@@ -14,7 +14,7 @@ export function ErrorState({ title, detail, onRetry }: ErrorStateProps) {
     >
       <p className="font-medium text-red-800">{title}</p>
       {detail ? <p className="text-sm text-red-600">{detail}</p> : null}
-      <Button variant="secondary" onClick={onRetry}>
+      <Button variant="outline" onClick={onRetry}>
         Try again
       </Button>
     </div>
