@@ -6,6 +6,15 @@ A daily scheduling board for sonographers and clinics, built as a technical asse
 
 ![CI](https://github.com/Mawem/clinic-scheduling/actions/workflows/ci.yml/badge.svg)
 
+<p align="center">
+  <img src="docs/screenshots/desktop.png" alt="Desktop: all sonographers side by side with sticky time gutter" width="100%">
+</p>
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="Mobile: one sonographer at a time with a tab switcher and floating create button" width="300">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/mobile-dialog.png" alt="Mobile: appointment dialog with stacked fields" width="300">
+</p>
+
 ## Features
 
 - **Day board** — one column per sonographer, 7 AM–7 PM in 15-minute slots, color-coded per sonographer.
@@ -59,6 +68,11 @@ pnpm lint
 pnpm typecheck
 pnpm build
 ```
+
+### Demo tips
+
+- Append **`?simulateErrors`** to the URL to make the appointments request fail intermittently — this exercises the retryable error panel and the toast/rollback path on purpose. It's off by default so a normal review session never hits artificial failures.
+- Data is seeded deterministically per date (same date → same schedule) and lives in the browser session; reload to reset your edits.
 
 ### Docker
 
