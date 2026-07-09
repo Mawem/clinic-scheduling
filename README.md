@@ -63,7 +63,7 @@ pnpm dev        # http://localhost:3000
 Other commands (run from the repo root, orchestrated by Turborepo):
 
 ```bash
-pnpm test       # unit + integration tests (35 tests)
+pnpm test       # unit + integration tests (36 tests)
 pnpm lint
 pnpm typecheck
 pnpm build

@@ -57,6 +57,22 @@ describe("AppointmentForm", () => {
     );
   });
 
+  it("snaps off-grid manual times to the 15-minute grid", async () => {
+    const user = userEvent.setup();
+    const onSubmit = renderForm();
+
+    await user.type(screen.getByLabelText("Patient name"), "Off Grid");
+    const start = screen.getByLabelText("Start");
+    await user.clear(start);
+    await user.type(start, "10:07");
+    await user.click(screen.getByRole("button", { name: "Create appointment" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce());
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ start: "10:00", end: "10:30" }),
+    );
+  });
+
   it("blocks double-booked slots and explains the conflict", async () => {
     const user = userEvent.setup();
     const onSubmit = renderForm();

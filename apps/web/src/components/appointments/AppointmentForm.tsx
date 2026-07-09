@@ -12,6 +12,7 @@ import type {
 import {
   EXAM_TYPES,
   formatTimeLabel,
+  snapToSlot,
   toMinutes,
   toTimeString,
   validateAppointment,
@@ -69,6 +70,10 @@ export function AppointmentForm({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    // Browsers don't reliably enforce the time input's step, so snap manual
+    // entries (e.g. 9:07) onto the 15-minute grid the board renders.
+    const startMin = snapToSlot(toMinutes(start), 15);
+    setStart(toTimeString(startMin));
     const input: AppointmentInput = {
       id: editingId,
       patientName: patientName.trim(),
@@ -76,8 +81,8 @@ export function AppointmentForm({
       clinicId,
       sonographerId,
       date,
-      start,
-      end: toTimeString(toMinutes(start) + duration),
+      start: toTimeString(startMin),
+      end: toTimeString(startMin + duration),
       notes: notes.trim() || undefined,
     };
 
