@@ -1,0 +1,15 @@
+# Containerized local development: `docker compose up`
+# Node modules live in a named volume so the host install doesn't leak in.
+services:
+  web:
+    image: node:22-alpine
+    working_dir: /repo
+    command: sh -c "corepack enable pnpm && pnpm install && pnpm --filter web dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/repo
+      - node_modules:/repo/node_modules
+
+volumes:
+  node_modules:
