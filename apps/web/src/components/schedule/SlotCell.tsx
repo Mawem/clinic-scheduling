@@ -22,6 +22,8 @@ export function SlotCell({ sonographerId, sonographerName, slotStartMin, onCreat
     id: `${sonographerId}:${slotStartMin}`,
     data: { sonographerId, slotStartMin } satisfies SlotDropData,
   });
+  // Only hour boundaries get a line — a border on every 15-minute slot makes
+  // the board read as noisy stripes.
   const isHourBoundary = (slotStartMin + SLOT_MIN) % 60 === 0;
 
   return (
@@ -33,8 +35,8 @@ export function SlotCell({ sonographerId, sonographerName, slotStartMin, onCreat
       aria-label={`New appointment for ${sonographerName} at ${formatTimeLabel(toTimeString(slotStartMin))}`}
       style={{ height: SLOT_PX }}
       className={clsx(
-        "block w-full border-b",
-        isHourBoundary ? "border-slate-200" : "border-slate-100",
+        "block w-full",
+        isHourBoundary && "border-b border-slate-200",
         isOver ? "bg-indigo-100" : "hover:bg-indigo-50/60",
       )}
     />
