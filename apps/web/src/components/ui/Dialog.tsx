@@ -44,7 +44,7 @@ export function Dialog({ title, onClose, children }: DialogProps) {
           </svg>
         </button>
       </div>
-      <div className="px-5 py-4">{children}</div>
+      <div className="max-h-[75dvh] overflow-y-auto px-5 py-4">{children}</div>
     </dialog>
   );
 }
