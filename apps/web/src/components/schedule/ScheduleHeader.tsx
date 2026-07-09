@@ -13,11 +13,13 @@ export function ScheduleHeader() {
   const activeClinic = clinics?.find((c) => c.id === clinicFilter);
 
   return (
-    <header className="mb-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <header className="mb-3 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Sonographer day board</h1>
-          <p className="text-sm text-slate-500">{formatDateLabel(selectedDate)}</p>
+          <h1 className="text-lg font-semibold text-slate-900 sm:text-xl">
+            Sonographer day board
+          </h1>
+          <p className="text-xs text-slate-500 sm:text-sm">{formatDateLabel(selectedDate)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1" role="group" aria-label="Date navigation">
@@ -57,7 +59,8 @@ export function ScheduleHeader() {
             ))}
           </select>
 
-          <Button variant="primary" onClick={() => openCreateDialog()}>
+          {/* On mobile the floating action button (SchedulePage) replaces this. */}
+          <Button variant="primary" onClick={() => openCreateDialog()} className="max-sm:hidden">
             + New appointment
           </Button>
         </div>
